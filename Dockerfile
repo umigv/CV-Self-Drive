@@ -39,12 +39,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-ros-core=0.10.0-1* \
     && rm -rf /var/lib/apt/lists/*
 
-# setup entrypoint
-COPY ./ros_entrypoint.sh /
 
 # Copy the workspace directory into the image
 COPY ./workspace /workspace
 
+# setup entrypoint
+COPY ./ros_entrypoint.sh /
+
+# Make the entrypoint script executable
+RUN echo '#!/bin/bash' > /ros_entrypoint.sh
+RUN echo 'source "/opt/ros/$ROS_DISTRO/setup.bash"' >> /ros_entrypoint.sh
+RUN echo 'exec "$@"' >> /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
